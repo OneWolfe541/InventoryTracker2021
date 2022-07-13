@@ -245,12 +245,12 @@ namespace InventoryTracker2021.Controllers
                 {
                     var credential = new NetworkCredential
                     {
-                        UserName = "noreply@electionpeople.com",  // replace with valid value
-                        Password = "@u+0v0+3***"  // replace with valid value
+                        UserName = "noreply@gmail.com",  // replace with valid value
+                        Password = "XXXX"  // replace with valid value
                     };
                     smtp.Credentials = credential;
-                    smtp.Host = "smtp.office365.com";
-                    smtp.Port = 587;
+                    smtp.Host = "XXXX";
+                    smtp.Port = 0000;
                     smtp.EnableSsl = true;
                     await smtp.SendMailAsync(message);
                 }
