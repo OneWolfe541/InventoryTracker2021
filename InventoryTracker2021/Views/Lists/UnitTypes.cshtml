@@ -1,0 +1,201 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.UnitType>
+
+@{
+    ViewBag.Title = "UnitTypes";
+}
+
+<h2>Unit Types</h2>
+
+<div class="row">
+    Select Category
+    @Html.DropDownList("CategoryList", (IEnumerable<SelectListItem>)ViewBag.CategoryList, "All", new { @class = "form-control", onchange = "SelectCategory()" })
+</div>
+<br />
+
+<table class="table">
+    <tr>
+        <th>
+            Category
+        </th>
+        <th>
+            Unit Type
+        </th>
+        <th>
+            Description
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DropDownListFor(modelItem => item.intCategoryID,
+                    new SelectList(ViewBag.CategoryList, "Value", "Text", item.intCategoryID),
+                    null, new { @class = "form-control", id = string.Format("unit_category_{0}", item.intUnitTypeID), onchange = string.Format("UpdateUnit({0})", item.intUnitTypeID) })
+            </td>
+            <td>
+                @Html.EditorFor(modelItem => item.chrUnitType, new { htmlAttributes = new { id = string.Format("unit_name_{0}", item.intUnitTypeID), onblur = string.Format("UpdateUnit({0})", item.intUnitTypeID), @class = "form-control" } })
+            </td>
+            <td>
+                @Html.EditorFor(modelItem => item.chrDescription, new { htmlAttributes = new { id = string.Format("unit_description_{0}", item.intUnitTypeID), onblur = string.Format("UpdateUnit({0})", item.intUnitTypeID), @class = "form-control" } })
+            </td>
+            <td>
+                @if (Request.Browser.Browser == "InternetExplorer")
+                {
+                    @Html.ActionLink("Delete", "DeleteUnit", "Lists", new { id = item.intUnitTypeID }, null)
+                }
+                else
+                {
+                    <a class="delete-link" href="@Url.Action("DeleteUnit", new {id = item.intUnitTypeID})">Delete</a>
+                    <div class="btn btn-primary delete-confirm" style="display:none" data-delete-id="@item.intUnitTypeID">Confirm Delete</div>
+                }
+            </td>
+        </tr>
+    }
+
+        <tr>
+            <td>
+                @Html.DropDownList("addCategoryName", (IEnumerable<SelectListItem>)ViewBag.CategoryList, "Select Category", new { @class = "form-control" })
+            </td>
+            <td>
+                <input class="text-box single-line form-control" id="addUnitName" />
+            </td>
+            <td>
+                <input class="text-box single-line form-control" id="addUnitDescription" />
+            </td>
+            <td>
+                <a class="btn btn-primary" id="btnAddUnit" onclick="AddUnit()">Add Unit Type</a>
+            </td>
+        </tr>
+
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+        // Set category selection on load
+        $(function () {
+            $('#CategoryList').val(@ViewBag.CategoryId);
+        });        
+
+        // Change page when drop down list is changed
+        var SelectCategory = function () {
+            console.log($("#CategoryList").val());
+            window.location.replace("../Lists/UnitTypes?Cat_ID=" + $("#CategoryList").val());
+        };
+
+        var UpdateUnit = function (id) {
+            var categoryListId = 'unit_category_' + id;
+            console.log($("#" + categoryListId).val());
+
+            var nameTextBoxId = 'unit_name_' + id;
+            console.log($("#" + nameTextBoxId).val());
+
+            var descriptionTextBoxId = 'unit_description_' + id;
+            console.log($("#" + descriptionTextBoxId).val());
+
+            $.ajax({
+                type: "POST",
+                url: "../Lists/UpdateUnit",
+                data: {
+                    ID: id,
+                    Cat_ID: $("#" + categoryListId).val(),
+                    Name: $("#" + nameTextBoxId).val(),
+                    Desc: $("#" + descriptionTextBoxId).val()
+                },
+                success: function (response) {
+                    if (response === null) {
+                        console.log("Error updating record id:" + id);
+                    }
+                }
+            });
+        };
+
+        var AddUnit = function () {
+            var categoryId = $("#addCategoryName").val();
+            var unitName = $("#addUnitName").val();
+            var unitDescription = $("#addUnitDescription").val();
+
+            if (categoryId === "") {
+                alert("Please select a category.");
+            }
+            else if (unitName === "") {
+                alert("Please enter a name for the unit type.");
+            }
+            else {
+                console.log(unitName);
+                $.ajax({
+                    type: "POST",
+                    url: "../Lists/AddUnit",
+                    data: {
+                        Cat_ID: categoryId,
+                        Name: unitName,
+                        Desc: unitDescription
+                    },
+                    success: function (response) {
+                        window.location.href = response.Url;
+                    }
+                });
+            };
+        };
+
+        $(function () {
+            $("a.delete-link").click(function () {
+                var deleteLink = $(this);
+                deleteLink.hide();
+                var confirmButton = deleteLink.siblings(".delete-confirm");
+                confirmButton.show();
+
+                var cancelDelete =  function () {
+                    removeEvents();
+                    showDeleteLink();
+                };
+
+                var deleteItem = function () {
+                    removeEvents();
+                    confirmButton.hide();
+                    $.post(
+                        '@Url.Action("DeleteUnit", "Lists")',
+                        AddAntiForgeryToken({ id: confirmButton.attr('data-delete-id') }))
+                       .done(function () {
+                           var parentRow = deleteLink.parents("tr:first");
+                           parentRow.fadeOut('fast', function () {
+                               parentRow.remove();
+                           });
+                       });
+                    location.reload();
+                    return false;
+                };
+
+                var removeEvents = function () {
+                    confirmButton.off("click", deleteItem);
+                    $(document).on("click", cancelDelete);
+                    $(document).off("keypress", onKeyPress);
+                };
+
+                var showDeleteLink = function () {
+                    confirmButton.hide();
+                    deleteLink.show();
+                };
+
+                var onKeyPress = function (e) {
+                    //Cancel if escape key pressed
+                    if (e.which == 27) {
+                        cancelDelete();
+                    }
+                };
+
+                confirmButton.on("click", deleteItem);
+                $(document).on("click", cancelDelete);
+                $(document).on("keypress", onKeyPress);
+
+                return false;
+            });
+
+            AddAntiForgeryToken = function (data) {
+                data.__RequestVerificationToken = $('input[name=__RequestVerificationToken]').val();
+                return data;
+            };
+        });
+    </script>
+}

@@ -1,0 +1,113 @@
+﻿
+@{
+    ViewBag.Title = "Add Item";
+}
+
+<h2>Add Item</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("Category")
+        </th>
+        <th>
+            @Html.DisplayName("Unit Name")
+        </th>
+        <th>
+            @Html.DisplayName("Quantity")
+        </th>
+        <th>
+            Broken
+        </th>
+        <th>
+        </th>
+        <th></th>
+    </tr>
+    <tr>
+        <td>
+            @Html.DropDownList("addItemCategory", (IEnumerable<SelectListItem>)ViewBag.CategoryList, "Select Category", new { @class = "form-control", @onchange = "UpdateUnitList()" })
+        </td>
+        <td>
+            @Html.DropDownList("addUnitName", (IEnumerable<SelectListItem>)ViewBag.UnitList, "Select Unit", new { @class = "form-control" })
+        </td>
+        <td>
+            <input class="text-box single-line form-control" id="addItemQuantity" />
+        </td>
+        <td>
+            <input id="addBrokenitem" type="checkbox" />
+        </td>
+        <td>
+            <a class="btn btn-primary" id="btnAddItem" onclick="AddItem()">Add Item</a>
+        </td>
+        <td>
+            @Html.Hidden("addItemLocation", (object)ViewBag.Location)
+            @*<input id="addItemLocation" name="addItemLocation" type="hidden" value="@ViewBag.Location" />*@
+        </td>
+    </tr>
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+        var applicationRoot = function () {
+            var appFolders = window.location.pathname.split('/');
+            return window.location.origin + "/" + appFolders[1];
+        }
+
+        var UpdateUnitList = function () {
+            console.log($("#addItemCategory").val());
+            var root = applicationRoot();
+            $.ajax({
+                url: root + "/Inventory/FilteredUnitList",
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    id: $("#addItemCategory").val()
+                },
+                success: function (response) {
+                    $("#addUnitName").html('');
+                    //console.log(response);
+                    $.each(response, function (index, item) {
+                        //console.log(item);
+                        $('#addUnitName')
+                            .append($('<option>', { value: item.Value })
+                                .text(item.Text));
+                    });
+                }
+            });
+        }
+
+        var AddItem = function () {
+            var unitId = $("#addUnitName").val();
+            var unitQuantity = $("#addItemQuantity").val();
+            var brokenItem = $("#addBrokenitem").is(":checked");
+            var locationId = $("#addItemLocation").val();
+            var categoryId = $("#addItemCategory").val();
+
+            if (categoryId === "") {
+                alert("Please select a category.");
+            }
+            else if (unitId === "") {
+                alert("Please select a unit name.");
+            }
+            else if (unitQuantity === "") {
+                alert("Please enter a unit quantity.");
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "../Inventory/AddItem",
+                    data: {
+                        Loc_ID: locationId,
+                        Cat_ID: categoryId,
+                        Unit_ID: unitId,
+                        Quantity: unitQuantity,
+                        Broken: brokenItem
+                    },
+                    success: function (response) {
+                        window.location.href = response.Url;
+                    }
+                });
+            };
+        }
+    </script>
+}

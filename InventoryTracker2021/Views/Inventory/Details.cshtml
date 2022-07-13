@@ -1,0 +1,229 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.InventoryDetailModel>
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<h3>@ViewBag.Location @ViewBag.Category</h3>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayName("Unit Name")
+        </th>
+        <th>
+            @Html.DisplayName("Quantity")
+        </th>
+        <th>
+            Broken
+        </th>
+        <th>
+            @Html.DisplayName("Last Updated")
+        </th>
+        <th>
+            @Html.DisplayName("Updated By User")
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.UnitName)
+            </td>
+            <td>
+                @Html.EditorFor(modelItem => item.Quantity, new { htmlAttributes = new { id = string.Format("item_QuantityValue_{0}", item.InventoryID), onblur = string.Format("UpdateItem({0})", item.InventoryID), @class = "form-control" } })
+            </td>
+            <td>
+                @Html.CheckBoxFor(modelItem => item.Broken, new { id = string.Format("item_BrokenValue_{0}", item.InventoryID), onclick = string.Format("UpdateItem({0})", item.InventoryID), htmlAttributes = new { @class = "form-control col-md-2 " } })
+            </td>
+            <td id="@string.Format("item_DateChanged_{0}", item.InventoryID)">
+                @Html.DisplayFor(modelItem => item.DateChanged)
+            </td>
+            <td id="@string.Format("item_ChangedBy_{0}", item.InventoryID)">
+                @Html.DisplayFor(modelItem => item.ChangedByName)
+            </td>
+            <td>
+                @if (Request.Browser.Browser == "InternetExplorer")
+                {
+                    @Html.ActionLink("Delete", "Delete", "Inventory", new { id = item.InventoryID, Loc_ID = ViewBag.LocationID, Cat_ID = ViewBag.CategoryID }, null)
+                }
+                else
+                {
+                    <a class="delete-link" href="@Url.Action("Delete", new {id = item.InventoryID, Loc_ID = ViewBag.LocationID, Cat_ID = ViewBag.CategoryID})">Delete</a>
+                    <div class="btn btn-primary delete-confirm" style="display:none" data-delete-id="@item.InventoryID">Confirm Delete</div>
+                }
+            </td>
+        </tr>
+    }
+
+    <tr>
+        <td>
+            @Html.DropDownList("addUnitName", (IEnumerable<SelectListItem>)ViewBag.UnitList, "Select Unit", new { @class = "form-control" })
+        </td>
+        <td>
+            <input class="text-box single-line form-control" id="addItemQuantity" />
+        </td>
+        <td>
+            <input id="addBrokenitem" type="checkbox" />
+        </td>
+        <td>
+            <a class="btn btn-primary" id="btnAddItem" onclick="AddItem()" >Add Item</a>
+        </td>
+        <td>
+            @Html.HiddenFor(modelItem => Model.First().LocationID, new { id = "addItemLocation" })
+            @Html.HiddenFor(modelItem => Model.First().CategoryID, new { id = "addItemCategory" })
+        </td>
+        <td>
+
+        </td>
+    </tr>
+</table>
+
+<div>
+    @Html.ActionLink("Back to Counts", "Counts", "Locations", new { id = ViewBag.LocationID }, null)
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        var UpdateItem = function (id) {
+            var quantityTextBoxId = 'item_QuantityValue_' + id;
+            console.log($("#" + quantityTextBoxId).val());
+
+            var brokenId = 'item_BrokenValue_' + id;
+            console.log($("#" + brokenId).is(":checked"));
+
+            var dateChanged = 'item_DateChanged_' + id;
+            console.log($("#" + dateChanged).html());
+
+            var changedBy = 'item_ChangedBy_' + id;
+            console.log($("#" + changedBy).html());
+
+            $.ajax({
+                type: "POST",
+                url: "../Inventory/UpdateItem",
+                data: {
+                    ID: id,
+                    Quantity: $("#" + quantityTextBoxId).val(),
+                    Broken: $("#" + brokenId).is(":checked")
+                },
+                success: function (response) {
+                    if (response === null) {
+                        console.log("Error updating record id:" + id);
+                    }
+                    else {
+                        $("#" + dateChanged).html(ConvertJsonDate(response.DateChanged));
+                        $("#" + changedBy).html(response.ChangedByName);
+                    }
+                }
+            });
+        };
+
+        var ConvertJsonDate = function (date) {
+            var newDate = new Date(parseInt(date.substr(6)));
+            var month = newDate.getMonth() + 1;
+            var day = newDate.getDate();
+            var year = newDate.getFullYear();
+            var hours24 = newDate.getHours();
+            var hours12 = hours24 % 12 || 12;
+            var minutes = newDate.getMinutes();
+            var seconds = newDate.getSeconds();
+            var ampm = hours24 >= 12 ? 'PM' : 'AM';
+            var date = month + "/" + day + "/" + year + " " + hours12 + ":" + minutes + ":" + seconds + " " + ampm;
+            return date;
+        };
+
+        var AddItem = function () {
+            var unitId = $("#addUnitName").val();
+            var unitQuantity = $("#addItemQuantity").val();
+            var brokenItem = $("#addBrokenitem").is(":checked");
+            var locationId = $("#addItemLocation").val();
+            var categoryId = $("#addItemCategory").val();
+
+            if (unitId === "") {
+                alert("Please select a unit name.");
+            }
+            else if (unitQuantity === "") {
+                alert("Please enter a unit quantity.");
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "../Inventory/AddItem",
+                    data: {
+                        Loc_ID: locationId,
+                        Cat_ID: categoryId,
+                        Unit_ID: unitId,
+                        Quantity: unitQuantity,
+                        Broken: brokenItem
+                    },
+                    success: function (response) {
+                        window.location.href = response.Url;
+                    }
+                });
+            };
+        };
+
+        $(function () {
+        $("a.delete-link").click(function () {
+            var deleteLink = $(this);
+            deleteLink.hide();
+            var confirmButton = deleteLink.siblings(".delete-confirm");
+            confirmButton.show();
+
+            var cancelDelete =  function () {
+                removeEvents();
+                showDeleteLink();
+            };
+
+            var deleteItem = function () {
+                removeEvents();
+                confirmButton.hide();
+                $.post(
+                    '@Url.Action("Delete", "Inventory")',
+                    AddAntiForgeryToken({ id: confirmButton.attr('data-delete-id') }))
+                   .done(function () {
+                       var parentRow = deleteLink.parents("tr:first");
+                       parentRow.fadeOut('fast', function () {
+                           parentRow.remove();
+                       });
+                   });
+                location.reload();
+                return false;
+            };
+
+            var removeEvents = function () {
+                confirmButton.off("click", deleteItem);
+                $(document).on("click", cancelDelete);
+                $(document).off("keypress", onKeyPress);
+            };
+
+            var showDeleteLink = function () {
+                confirmButton.hide();
+                deleteLink.show();
+            };
+
+            var onKeyPress = function (e) {
+                //Cancel if escape key pressed
+                if (e.which == 27) {
+                    cancelDelete();
+                }
+            };
+
+            confirmButton.on("click", deleteItem);
+            $(document).on("click", cancelDelete);
+            $(document).on("keypress", onKeyPress);
+
+            return false;
+        });
+
+        AddAntiForgeryToken = function (data) {
+            data.__RequestVerificationToken = $('input[name=__RequestVerificationToken]').val();
+            return data;
+        };
+    });
+    </script>
+}

@@ -1,0 +1,64 @@
+﻿@model InventoryTracker2021.Models.User
+
+@{
+    ViewBag.Title = "Login";
+}
+
+<h2>Login</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-horizontal">
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.chrUser, "User Name", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.chrUser, new { htmlAttributes = new { @class = "form-control" } })
+                @Html.ValidationMessageFor(model => model.chrUser, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.binPasswordHash, "Password", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @*@Html.PasswordFor(model => model.binPasswordHash, new { htmlAttributes = new { @class = "form-control text-box single-line" } })*@
+                @Html.PasswordFor(model => model.binPasswordHash, new { @class = "form-control text-box single-line" })
+                @Html.ValidationMessageFor(model => model.binPasswordHash, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-1">
+                <input type="submit" value="Login" class="btn btn-default" />
+            </div>
+            <div class="col-md-5" style="font-size:14px; margin-top:6px;">
+                <a href="#" id="ForgotPasswordLink" onclick="ForgotPassword()">Forgot Password</a>
+            </div>
+        </div>
+
+        <div class="form-group">
+
+        </div>
+    </div>
+}
+
+@section scripts{
+    <script type="text/javascript">
+        var ForgotPassword = function () {
+            console.log($("#chrUser").val());
+            var root = applicationRoot();
+            window.location.replace(root + "/User/ForgotPassword?name=" + $("#chrUser").val());
+        };
+
+        var applicationRoot = function () {
+            var appFolders = window.location.pathname.split('/');
+            return window.location.origin + "/" + appFolders[1];
+        }
+    </script>
+}
+

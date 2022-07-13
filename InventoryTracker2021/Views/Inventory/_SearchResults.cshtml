@@ -1,0 +1,46 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.InventorySearchModel>
+
+@if (ViewBag.EmptyList >= 1)
+{
+<h3 style="font-weight:500;">@ViewBag.UnitType @ViewBag.Category Results</h3>
+    <p>@ViewBag.EmptyList Locations Found</p>
+    <table class="table">
+        <tr>
+            <th>
+                @Html.DisplayName("City")
+            </th>
+            <th>
+                @Html.DisplayName("Storage Unit")
+            </th>
+            <th>
+                @Html.DisplayName("Quantity")
+            </th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    <a href="../Inventory/Details?Loc_ID=@item.LocationID&amp;Cat_ID=@item.CategoryID">
+                        @Html.DisplayFor(modelItem => item.City)
+                    </a>
+                </td>
+                <td>
+                    <a href="../Inventory/Details?Loc_ID=@item.LocationID&amp;Cat_ID=@item.CategoryID">
+                        @Html.DisplayFor(modelItem => item.StorageName)
+                    </a>
+                </td>
+                <td>
+                    <a href="../Inventory/Details?Loc_ID=@item.LocationID&amp;Cat_ID=@item.CategoryID">
+                        @Html.DisplayFor(modelItem => item.Quantity)
+                    </a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div class="col-sm-4 pull-right">
+        <p style="font-size:1.5em; color:red; font-weight:600;">No Voters Found</p>
+    </div>
+}

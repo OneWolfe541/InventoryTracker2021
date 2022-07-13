@@ -1,0 +1,87 @@
+﻿@model InventoryTracker2021.Models.Location
+
+@{
+    ViewBag.Title = "Counts";
+}
+
+<table style="width:300px;">
+    <tr>
+        <th>
+            <h2>Inventory Counts</h2>
+            @Html.ActionLink("Back to Locations", "Index")
+        </th>
+    </tr>
+
+    <tr>
+        <td id="tblDisplay">
+            @Html.Partial("_Details", Model)
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <a href="#" onclick="ShowEdit()">Edit</a>
+                    </td>
+                    <td>
+                        &nbsp;
+                    </td>
+                    <td style="text-align:right;">
+                        @Html.ActionLink("Add Item", "Add", "Inventory", new { Loc_ID = Model.intLocationID }, null)
+                    </td>
+                </tr>
+            </table>            
+            <br />
+        </td>
+        <td id="tblEdit" style=" display:none;">
+            @Html.Partial("_Edit", Model)
+            <a href="#" onclick="SaveLocation()">Save</a>
+            <br />
+        </td>
+    </tr>
+
+    <tr>
+        <td>
+            @Html.Action("LocationSummary", "Locations", new { id = Model.intLocationID })
+        </td>
+    </tr>
+
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+        var ShowEdit = function () {
+            console.log("Edit Clicked");
+            $("#tblEdit").show();
+            $("#tblDisplay").hide();
+        };
+
+        var SaveLocation = function () {
+            // Save should reload the whole page
+            console.log("Save Clicked");
+
+            var locId = $('#intLocationID').val();
+            var name = $('#chrNickName').val();
+            var storage = $('#chrStorageName').val();
+            var phone = $('#chrPhone').val();
+            var gate = $('#chrGateCode').val();
+            var instr = $('#chrIntructions').val();
+
+            console.log(locId);
+            console.log(name);
+
+            $.ajax({
+                type: "POST",
+                url: "../Update",
+                data: {
+                    id: locId,
+                    Name: name,
+                    Storage: storage,
+                    Phone: phone,
+                    Code: gate,
+                    Notes: instr
+                },
+                success: function (response) {
+                    window.location.href = response.Url;
+                }
+            });
+        };
+    </script>
+}

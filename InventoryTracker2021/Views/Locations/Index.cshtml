@@ -1,0 +1,133 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.Location>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Storage Locations</h2>
+
+<p>
+    @Html.ActionLink("Create New Location", "Create")
+</p>
+<table class="table">
+    <tr>
+        <th>
+            <h4>City</h4>
+        </th>
+        <th>
+            <h4>State</h4>
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                <a href="#" data-toggle="collapse" data-target="#@item.intLocationID"><span class="caret"></span></a>
+                @Html.ActionLink(item.chrNickName, "Counts", new { id = item.intLocationID })
+            </td>
+            <td>
+                @*@Html.DisplayFor(modelItem => item.chrState)*@
+                @Html.ActionLink(item.chrState, "Counts", new { id = item.intLocationID })
+            </td>
+            @*<td>
+                @Html.ActionLink("Edit", "Edit", new { id = item.intLocationID }) |
+                @if (Request.Browser.Browser == "InternetExplorer")
+                {
+                    @Html.ActionLink("Delete", "Delete", new { id = item.intLocationID })
+                }
+                else
+                {
+                    <a class="delete-link" href="@Url.Action("Delete", new {id = item.intLocationID})">Delete</a>
+                    <div class="btn btn-primary delete-confirm" style="display:none" data-delete-id="@item.intLocationID">Confirm Delete</div>
+                }
+            </td>*@
+        </tr>
+        <tr>
+            <td class="accordian-body collapse" id="@item.intLocationID" tabindex="-1" colspan="3" style="border-top-width:0px; height:0px;">
+                <table style="border-top-width:0px; margin-top:-15px; margin-left:15px;">
+                    <tr>
+                        <th style="border-top-width:0px; padding:0px 15px 0px 0px;">Address</th>
+                        <th style="border-top-width:0px; padding:0px 15px 0px 0px;">City</th>
+                        <th style="border-top-width:0px; padding:0px 15px 0px 0px;">Hours</th>
+                        <th style="border-top-width:0px; padding:0px 15px 0px 0px;">Phone</th>
+                        <th style="border-top-width:0px; padding:0px 15px 0px 0px;">Code</th>
+                    </tr>
+                    <tr>
+                        <td style="border-top-width:0px; padding:0px 15px 0px 0px;">@Html.DisplayFor(modelItem => item.chrAddress1)</td>
+                        <td style="border-top-width:0px; padding:0px 15px 0px 0px;">@Html.DisplayFor(modelItem => item.chrCity)</td>
+                        <td style="border-top-width:0px; padding:0px 15px 0px 0px;">@Html.DisplayFor(modelItem => item.chrHours)</td>
+                        <td style="border-top-width:0px; padding:0px 15px 0px 0px;"><a href="tel:+@item.chrPhone">@Html.DisplayFor(modelItem => item.chrPhone)</a></td>
+                        <td style="border-top-width:0px; padding:0px 15px 0px 0px;">@Html.DisplayFor(modelItem => item.chrGateCode)</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    }
+
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+    $(function () {
+        $("a.delete-link").click(function () {
+            var deleteLink = $(this);
+            deleteLink.hide();
+            var confirmButton = deleteLink.siblings(".delete-confirm");
+            confirmButton.show();
+
+            var cancelDelete =  function () {
+                removeEvents();
+                showDeleteLink();
+            };
+
+            var deleteItem = function () {
+                removeEvents();
+                confirmButton.hide();
+                $.post(
+                    '@Url.Action("Delete")',
+                    AddAntiForgeryToken({ id: confirmButton.attr('data-delete-id') }))
+                   .done(function () {
+                       var parentRow = deleteLink.parents("tr:first");
+                       parentRow.fadeOut('fast', function () {
+                           parentRow.remove();
+                       });
+                   }).fail(function (data) {
+                       alert("error");
+                   });
+                return false;
+            };
+
+            var removeEvents = function () {
+                confirmButton.off("click", deleteItem);
+                $(document).on("click", cancelDelete);
+                $(document).off("keypress", onKeyPress);
+            };
+
+            var showDeleteLink = function () {
+                confirmButton.hide();
+                deleteLink.show();
+            };
+
+            var onKeyPress = function (e) {
+                //Cancel if escape key pressed
+                if (e.which == 27) {
+                    cancelDelete();
+                }
+            };
+
+            confirmButton.on("click", deleteItem);
+            $(document).on("click", cancelDelete);
+            $(document).on("keypress", onKeyPress);
+
+            return false;
+        });
+
+        AddAntiForgeryToken = function (data) {
+            data.__RequestVerificationToken = $('input[name=__RequestVerificationToken]').val();
+            return data;
+        };
+    });
+    </script>
+}

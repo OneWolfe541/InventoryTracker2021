@@ -1,0 +1,53 @@
+﻿@model InventoryTracker2021.Models.Location
+
+<table style="width:300px; border:0 none none;">
+    <tr>
+        <td>
+            Name
+        </td>
+        <td width="225">
+            @Html.HiddenFor(model => model.intLocationID)
+            @Html.EditorFor(model => model.chrNickName, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Storage
+        </td>
+        <td>
+            @Html.EditorFor(modelItem => modelItem.chrStorageName, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Phone
+        </td>
+        <td>
+            @Html.EditorFor(modelItem => modelItem.chrPhone, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Address
+        </td>
+        <td>
+            @Html.EditorFor(modelItem => modelItem.chrAddress1, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Code
+        </td>
+        <td>
+            @Html.EditorFor(modelItem => modelItem.chrGateCode, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Notes
+        </td>
+        <td>
+            @Html.EditorFor(modelItem => modelItem.chrIntructions, new { htmlAttributes = new { @class = "form-control" } })
+        </td>
+    </tr>
+</table>

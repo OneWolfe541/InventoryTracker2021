@@ -1,0 +1,79 @@
+﻿@model InventoryTracker2021.Models.User
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Account Details</h2>
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="form-horizontal">
+
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    @if (ViewBag.Message != null)
+    {
+        <div class="form-group">
+            <div class="col-md-10">@ViewBag.Message</div>
+        </div>
+    }
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.chrUser, "User Name", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            <div style="margin-top:7px;">
+                @Html.DisplayFor(model => model.chrUser, new { htmlAttributes = new { @class = "form-control" } })
+            </div>
+            @Html.ValidationMessageFor(model => model.chrUser, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10" style="font-size:14px; margin-top:6px;">
+            <b>Email is used for password recovery purposes only.</b>
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.chrEmail, "Email", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.chrEmail, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.chrEmail, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-2">
+            <input type="submit" value="Save Changes" class="btn btn-default" />
+        </div>
+        <div class="col-md-5" style="font-size:14px; margin-top:6px;">
+            <a href="#" id="ChangePasswordLink" onclick="ChangePassword()">Change Password</a>
+        </div>
+    </div>
+
+    @Html.HiddenFor(model => model.intUserID)
+    @Html.HiddenFor(model => model.chrUser)
+
+</div>
+
+}
+
+@section scripts{
+    <script type="text/javascript">
+        var ChangePassword = function () {
+            console.log($("#intUserID").val());
+            var root = applicationRoot();
+            window.location.replace(root + "/User/Reset?xuin=" + $("#intUserID").val());
+        };
+
+        var applicationRoot = function () {
+            var appFolders = window.location.pathname.split('/');
+            return window.location.origin + "/" + appFolders[1];
+        }
+    </script>
+}
+

@@ -1,0 +1,24 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.LocationSummaryModel>
+
+<table class="table" style="width:300px;">
+    @foreach (var catgroup in Model.GroupBy(category => new { category.LocationID, category.CategoryID, category.Category }))
+    {
+        <tr>
+            <td colspan="2">
+                @Html.ActionLink(catgroup.Key.Category, "Details", "Inventory", new { Loc_ID = catgroup.Key.LocationID, Cat_ID = catgroup.Key.CategoryID }, new { @class = "btn btn-primary", @style = "width:100%; background-color:lightgray; border-color:white; color:black;" })
+            </td>
+        </tr>
+
+        foreach (var item in catgroup)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.UnitName)
+                </td>
+                <td style="text-align:right; padding-right:5px;">
+                    @Html.DisplayFor(modelItem => item.Total)
+                </td>
+            </tr>
+        }
+    }
+</table>

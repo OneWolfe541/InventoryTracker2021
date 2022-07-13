@@ -1,0 +1,68 @@
+﻿
+@{
+    ViewBag.Title = "Search";
+}
+
+<h2>Search</h2>
+
+<table style="width:500px;">
+    <tr>
+        <td width="75px">&nbsp;Category</td>
+        <td>@Html.DropDownList("CategoryList", (IEnumerable<SelectListItem>)ViewBag.CategoryList, "All", new { @class = "form-control" })</td>
+    </tr>
+    <tr>
+        <td style="font-size:8px;">
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td width="75px">&nbsp;Unit Type</td>
+        <td>@Html.DropDownList("UnitList", (IEnumerable<SelectListItem>)ViewBag.UnitList, new { @class = "form-control" })</td>
+    </tr>
+    <tr>
+        <td style="font-size:8px;">
+            &nbsp;
+        </td>
+    </tr>
+    <tr>
+        <td width="75px">
+            <a href="#" class="btn btn-success" onclick="ShowListLoad()" style="width:100px;">Go</a>
+        </td>
+    </tr>
+
+</table>
+
+<div class="container" style="clear:both;">
+    <div id="myListDiv"></div>
+    <br /><br />
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        $("#CategoryList").change(function () {
+            console.log($("#CategoryList").val());
+            $.ajax({
+                type: "POST",
+                url: "../Inventory/GetUnitList",
+                data: {
+                    Cat_ID: $("#CategoryList").val()
+                },
+                success: function (response) {
+                    console.log(response);
+                    $("#UnitList").empty();
+                    $.each(response, function (index, item) {
+                        $("#UnitList").append($('<option></option>').text(item.Text).val(item.ID));
+                    });
+                }
+            });
+        });
+
+        var ShowListLoad = function () {
+            var url = "../Inventory/GetUnitLocations" +
+                "?Type_ID=" + $("#UnitList").val() + "&Cat_ID" + $("#CategoryList").val();
+            $("#myListDiv").load(url, function () {
+                $("#myListDiv").show();
+            });
+        };
+    </script>
+}

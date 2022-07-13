@@ -1,0 +1,147 @@
+﻿@model IEnumerable<InventoryTracker2021.Models.Category>
+
+@{
+    ViewBag.Title = "Categories";
+}
+
+<h2>Category List</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            Category Name
+        </th>
+        <th></th>
+    </tr>
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.EditorFor(modelItem => item.chrName, new { htmlAttributes = new { id = string.Format("category_{0}", item.intCategoryID), onblur = string.Format("UpdateCategory({0})", item.intCategoryID), @class = "form-control" } })
+            </td>
+            <td>
+                @if (Request.Browser.Browser == "InternetExplorer")
+                {
+                    @Html.ActionLink("Delete", "DeleteCategory", "Lists", new { Cat_ID = item.intCategoryID }, null)
+                }
+                else
+                {
+                    <a class="delete-link" href="@Url.Action("DeleteCategory", new {Cat_ID = item.intCategoryID})">Delete</a>
+                    <div class="btn btn-primary delete-confirm" style="display:none" data-delete-id="@item.intCategoryID">Confirm Delete</div>
+                }
+            </td>
+        </tr>
+    }
+
+        <tr>
+            <td>
+                <input class="text-box single-line form-control" id="addCategoryName" />
+            </td>
+            <td>
+                <a class="btn btn-primary" id="btnAddCategory" onclick="AddCategory()">Add Category</a>
+            </td>
+        </tr>
+</table>
+
+@section scripts{
+    <script type="text/javascript">
+        var UpdateCategory = function (id) {
+            var nameTextBoxId = 'category_' + id;
+            console.log($("#" + nameTextBoxId).val());
+
+            $.ajax({
+                type: "POST",
+                url: "../Lists/UpdateCategory",
+                data: {
+                    ID: id,
+                    Name: $("#" + nameTextBoxId).val()
+                },
+                success: function (response) {
+                    if (response === null) {
+                        console.log("Error updating record id:" + id);
+                    }                    
+                }
+            });
+        };
+
+        var AddCategory = function () {
+            var categoryName = $("#addCategoryName").val();
+
+            if (categoryName === "") {
+                alert("Please enter a name for the category.");
+            }            
+            else {
+                console.log(categoryName);
+                $.ajax({
+                    type: "POST",
+                    url: "../Lists/AddCategory",
+                    data: {
+                        Name: categoryName
+                    },
+                    success: function (response) {
+                        window.location.href = response.Url;
+                    }
+                });
+            };
+        };
+
+        $(function () {
+            $("a.delete-link").click(function () {
+                var deleteLink = $(this);
+                deleteLink.hide();
+                var confirmButton = deleteLink.siblings(".delete-confirm");
+                confirmButton.show();
+
+                var cancelDelete =  function () {
+                    removeEvents();
+                    showDeleteLink();
+                };
+
+                var deleteItem = function () {
+                    removeEvents();
+                    confirmButton.hide();
+                    $.post(
+                        '@Url.Action("DeleteCategory", "Lists")',
+                        AddAntiForgeryToken({ id: confirmButton.attr('data-delete-id') }))
+                       .done(function () {
+                           var parentRow = deleteLink.parents("tr:first");
+                           parentRow.fadeOut('fast', function () {
+                               parentRow.remove();
+                           });
+                       });
+                    location.reload();
+                    return false;
+                };
+
+                var removeEvents = function () {
+                    confirmButton.off("click", deleteItem);
+                    $(document).on("click", cancelDelete);
+                    $(document).off("keypress", onKeyPress);
+                };
+
+                var showDeleteLink = function () {
+                    confirmButton.hide();
+                    deleteLink.show();
+                };
+
+                var onKeyPress = function (e) {
+                    //Cancel if escape key pressed
+                    if (e.which == 27) {
+                        cancelDelete();
+                    }
+                };
+
+                confirmButton.on("click", deleteItem);
+                $(document).on("click", cancelDelete);
+                $(document).on("keypress", onKeyPress);
+
+                return false;
+            });
+
+            AddAntiForgeryToken = function (data) {
+                data.__RequestVerificationToken = $('input[name=__RequestVerificationToken]').val();
+                return data;
+            };
+        });
+    </script>
+}
